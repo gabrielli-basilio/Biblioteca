@@ -1,0 +1,1 @@
+ALTER DATABASE "Bribrioteca" SET search_path TO bribriotecadb, public;
