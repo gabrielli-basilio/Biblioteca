@@ -3,10 +3,10 @@
 use App\Http\Controllers\CategoriaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmprestimoController;
+use App\Http\Controllers\DashboardController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::post('/atualizar-atrasados', [DashboardController::class, 'atualizarAtrasados'])->name('atrasados.atualizar');
 
 Route::resource('categorias', CategoriaController::class)
     ->except('show')
