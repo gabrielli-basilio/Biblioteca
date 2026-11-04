@@ -27,7 +27,7 @@ class EmprestimoService
 
         try {
             $resultado = DB::transaction(fn () => DB::selectOne(
-                'CALL sp_registrar_emprestimo(?, ?::int[], ?, NULL)',
+                'CALL sp_gabrielli_registrar_emprestimo(?, ?::int[], ?, NULL)',
                 [$clienteId, $arrayPostgres, $diasPrazo]
             ));
         } catch (QueryException $e) {
@@ -41,7 +41,7 @@ class EmprestimoService
     {
         try {
             DB::transaction(fn () => DB::statement(
-                'CALL sp_registrar_devolucao(?, ?)',
+                'CALL sp_gabrielli_registrar_devolucao(?, ?)',
                 [$emprestimo->id_emprestimo, $livroId]
             ));
         } catch (QueryException $e) {
@@ -56,7 +56,7 @@ class EmprestimoService
 
     public function atualizarAtrasados(): void
     {
-        DB::statement('CALL sp_atualizar_atrasados()');
+        DB::statement('CALL sp_gabrielli_atualizar_atrasados()');
     }
 
     private function converterErro(QueryException $e): \Throwable
