@@ -1,5 +1,6 @@
 SET search_path TO bribriotecadb;
 
+-- Procedure 1
 CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_emprestimo(
     p_cliente_id    INTEGER,
     p_livros        INTEGER[],
@@ -53,6 +54,7 @@ BEGIN
 END;
 $$;
 
+-- Procedure 2
 CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_devolucao(
     p_emprestimo_id INTEGER,
     p_livro_id      INTEGER DEFAULT NULL
@@ -101,3 +103,29 @@ BEGIN
     END IF;
 END;
 $$;
+
+-- Procedure 3
+CREATE OR REPLACE PROCEDURE sp_gabrielli_atualizar_atrasados()
+LANGUAGE plpgsql
+SET search_path = gabrielli_trabalho_bd, public
+AS $$
+DECLARE
+    v_mv RECORD;
+BEGIN
+    UPDATE emprestimos
+       SET status = 'atrasado'
+     WHERE status = 'em_andamento'
+       AND data_prevista_devolucao < CURRENT_DATE;
+ 
+    FOR v_mv IN
+        SELECT schemaname, matviewname
+          FROM pg_matviews
+         WHERE schemaname = 'gabrielli_trabalho_bd'
+         ORDER BY matviewname
+    LOOP
+        EXECUTE format('REFRESH MATERIALIZED VIEW %I.%I', v_mv.schemaname, v_mv.matviewname);
+    END LOOP;
+END;
+$$;
+ 
+CALL sp_gabrielli_atualizar_atrasados();
