@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict dUNwZEdHTuH121ItYqHnGgDmy5Sz7QcDheJ2lKylf2xJDInZ4LAF37AJzQpE8w9
+\restrict 6MNvcIlfXfQ8totawnohqkPbBl6EQLpYfeZUUstxKb4RXPAZQg8LxKjYSI5bapz
 
 -- Dumped from database version 18.6 (ac70818)
 -- Dumped by pg_dump version 18.4
@@ -137,7 +137,7 @@ ALTER FUNCTION bribriotecadb.fn_valida_disponibilidade() OWNER TO neondb_owner;
 
 CREATE PROCEDURE bribriotecadb.sp_gabrielli_atualizar_atrasados()
     LANGUAGE plpgsql
-    SET search_path TO 'gabrielli_trabalho_bd', 'public'
+    SET search_path TO 'bribriotecadb', 'public'
     AS $$
 DECLARE
     v_mv RECORD;
@@ -150,7 +150,7 @@ BEGIN
     FOR v_mv IN
         SELECT schemaname, matviewname
           FROM pg_matviews
-         WHERE schemaname = 'gabrielli_trabalho_bd'
+         WHERE schemaname = 'bribriotecadb'
          ORDER BY matviewname
     LOOP
         EXECUTE format('REFRESH MATERIALIZED VIEW %I.%I', v_mv.schemaname, v_mv.matviewname);
@@ -167,7 +167,7 @@ ALTER PROCEDURE bribriotecadb.sp_gabrielli_atualizar_atrasados() OWNER TO neondb
 
 CREATE PROCEDURE bribriotecadb.sp_gabrielli_registrar_devolucao(IN p_emprestimo_id integer, IN p_livro_id integer DEFAULT NULL::integer)
     LANGUAGE plpgsql
-    SET search_path TO 'gabrielli_trabalho_bd', 'public'
+    SET search_path TO 'bribriotecadb', 'public'
     AS $$
 DECLARE
     v_devolucao DATE;
@@ -220,7 +220,7 @@ ALTER PROCEDURE bribriotecadb.sp_gabrielli_registrar_devolucao(IN p_emprestimo_i
 
 CREATE PROCEDURE bribriotecadb.sp_gabrielli_registrar_emprestimo(IN p_cliente_id integer, IN p_livros integer[], IN p_dias_prazo integer, INOUT p_emprestimo_id integer DEFAULT NULL::integer)
     LANGUAGE plpgsql
-    SET search_path TO 'gabrielli_trabalho_bd', 'public'
+    SET search_path TO 'bribriotecadb', 'public'
     AS $$
 DECLARE
     v_livros INTEGER[];
@@ -41722,5 +41722,5 @@ REFRESH MATERIALIZED VIEW bribriotecadb.vm_ranking_clientes;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dUNwZEdHTuH121ItYqHnGgDmy5Sz7QcDheJ2lKylf2xJDInZ4LAF37AJzQpE8w9
+\unrestrict 6MNvcIlfXfQ8totawnohqkPbBl6EQLpYfeZUUstxKb4RXPAZQg8LxKjYSI5bapz
 
