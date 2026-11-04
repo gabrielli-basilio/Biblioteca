@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AutorController;
 use App\Http\Controllers\EditoraController;
 use App\Http\Controllers\LivroController;
+use App\Http\Controllers\ClienteController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 Route::post('/atualizar-atrasados', [DashboardController::class, 'atualizarAtrasados'])->name('atrasados.atualizar');
@@ -25,10 +26,13 @@ Route::patch('emprestimos/{emprestimo}/devolver', [EmprestimoController::class, 
 Route::resource('autores', AutorController::class)
     ->except('show')
     ->parameters(['autores' => 'autor']);
-    
+
 Route::resource('editoras', EditoraController::class)
     ->except('show')
     ->parameters(['editoras' => 'editora']);
-    
+
 Route::resource('livros', LivroController::class)
     ->parameters(['livros' => 'livro']);
+
+Route::resource('clientes', ClienteController::class)
+->parameters(['clientes' => 'cliente']);
