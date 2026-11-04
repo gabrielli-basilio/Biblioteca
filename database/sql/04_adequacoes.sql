@@ -18,3 +18,13 @@ ALTER TABLE livros
  
 -- Índice
 CREATE INDEX IF NOT EXISTS idx_clienteid_emprestimos ON emprestimos(cliente_id);
+
+-- Confere os 3 CHECK e o índice
+SELECT 'CHECK' AS tipo, conname AS nome, pg_get_constraintdef(oid) AS regra
+FROM pg_constraint
+WHERE contype = 'c'
+  AND conrelid IN ('bribriotecadb.emprestimos'::regclass, 'bribriotecadb.livros'::regclass)
+UNION ALL
+SELECT 'ÍNDICE', indexname, indexdef
+FROM pg_indexes
+WHERE schemaname = 'bribriotecadb' AND indexname = 'idx_clienteid_emprestimos';
