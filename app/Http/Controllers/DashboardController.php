@@ -20,7 +20,7 @@ class DashboardController extends Controller
         ];
 
         $maisEmprestados = DB::table('vw_livros_mais_emprestados')->limit(10)->get();
-        $atrasados = DB::table('vw__emprestimos_atrasados')->limit(10)->get();
+        $atrasados = DB::table('vw_emprestimos_atrasados')->limit(10)->get();
 
         return view('dashboard', compact('totais', 'maisEmprestados', 'atrasados'));
     }
