@@ -19,8 +19,8 @@ class DashboardController extends Controller
             'atrasados' => Emprestimo::where('status', 'atrasado')->count(),
         ];
 
-        $maisEmprestados = DB::table('vw_gabrielli_livros_mais_emprestados')->limit(10)->get();
-        $atrasados = DB::table('vw_gabrielli_emprestimos_atrasados')->limit(10)->get();
+        $maisEmprestados = DB::table('vw_livros_mais_emprestados')->limit(10)->get();
+        $atrasados = DB::table('vw__emprestimos_atrasados')->limit(10)->get();
 
         return view('dashboard', compact('totais', 'maisEmprestados', 'atrasados'));
     }
