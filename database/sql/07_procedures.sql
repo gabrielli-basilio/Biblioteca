@@ -52,3 +52,52 @@ BEGIN
     END LOOP;
 END;
 $$;
+
+CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_devolucao(
+    p_emprestimo_id INTEGER,
+    p_livro_id      INTEGER DEFAULT NULL
+)
+LANGUAGE plpgsql
+SET search_path = gabrielli_trabalho_bd, public
+AS $$
+DECLARE
+    v_devolucao DATE;
+    v_linhas    INTEGER;
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM emprestimos WHERE id_emprestimo = p_emprestimo_id) THEN
+        RAISE EXCEPTION 'Empréstimo % não encontrado', p_emprestimo_id;
+    END IF;
+ 
+    IF p_livro_id IS NOT NULL THEN
+        SELECT data_devolucao
+          INTO v_devolucao
+          FROM itens_emprestimos
+         WHERE emprestimo_id = p_emprestimo_id
+           AND livro_id = p_livro_id;
+ 
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Livro % não pertence ao empréstimo %', p_livro_id, p_emprestimo_id;
+        END IF;
+ 
+        IF v_devolucao IS NOT NULL THEN
+            RAISE EXCEPTION 'Livro % já foi devolvido no empréstimo %', p_livro_id, p_emprestimo_id;
+        END IF;
+ 
+        UPDATE itens_emprestimos
+           SET data_devolucao = CURRENT_DATE
+         WHERE emprestimo_id = p_emprestimo_id
+           AND livro_id = p_livro_id;
+    ELSE
+        UPDATE itens_emprestimos
+           SET data_devolucao = CURRENT_DATE
+         WHERE emprestimo_id = p_emprestimo_id
+           AND data_devolucao IS NULL;
+ 
+        GET DIAGNOSTICS v_linhas = ROW_COUNT;
+ 
+        IF v_linhas = 0 THEN
+            RAISE EXCEPTION 'Empréstimo % não possui livros pendentes', p_emprestimo_id;
+        END IF;
+    END IF;
+END;
+$$;
