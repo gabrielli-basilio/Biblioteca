@@ -1,4 +1,4 @@
-SET search_path TO gabrielli_trabalho_bd;
+SET search_path TO bribriotecadb;
 
 DROP TABLE IF EXISTS pg_temp.resultado_testes;
 CREATE TEMP TABLE resultado_testes (

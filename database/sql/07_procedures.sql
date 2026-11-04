@@ -8,7 +8,7 @@ CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_emprestimo(
     INOUT p_emprestimo_id INTEGER DEFAULT NULL
 )
 LANGUAGE plpgsql
-SET search_path = gabrielli_trabalho_bd, public
+SET search_path = bribriotecadb, public
 AS $$
 DECLARE
     v_livros INTEGER[];
@@ -60,7 +60,7 @@ CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_devolucao(
     p_livro_id      INTEGER DEFAULT NULL
 )
 LANGUAGE plpgsql
-SET search_path = gabrielli_trabalho_bd, public
+SET search_path = bribriotecadb, public
 AS $$
 DECLARE
     v_devolucao DATE;
@@ -107,7 +107,7 @@ $$;
 -- Procedure 3
 CREATE OR REPLACE PROCEDURE sp_gabrielli_atualizar_atrasados()
 LANGUAGE plpgsql
-SET search_path = gabrielli_trabalho_bd, public
+SET search_path = bribriotecadb, public
 AS $$
 DECLARE
     v_mv RECORD;
@@ -120,7 +120,7 @@ BEGIN
     FOR v_mv IN
         SELECT schemaname, matviewname
           FROM pg_matviews
-         WHERE schemaname = 'gabrielli_trabalho_bd'
+         WHERE schemaname = 'bribriotecadb'
          ORDER BY matviewname
     LOOP
         EXECUTE format('REFRESH MATERIALIZED VIEW %I.%I', v_mv.schemaname, v_mv.matviewname);
