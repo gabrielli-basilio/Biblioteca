@@ -49,6 +49,6 @@ class LivroService
 
     public function exemplaresDisponiveis(Livro $livro): int
     {
-        return (int) DB::scalar('SELECT fn_gabrielli_exemplares_disponiveis(?)', [$livro->id_livro]);
+        return (int) DB::scalar('SELECT fn_exemplares_disponiveis(?)', [$livro->id_livro]);
     }
 }
