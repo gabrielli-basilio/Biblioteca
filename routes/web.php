@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmprestimoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AutorController;
+use App\Http\Controllers\EditoraController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 Route::post('/atualizar-atrasados', [DashboardController::class, 'atualizarAtrasados'])->name('atrasados.atualizar');
@@ -23,3 +24,7 @@ Route::patch('emprestimos/{emprestimo}/devolver', [EmprestimoController::class, 
 Route::resource('autores', AutorController::class)
     ->except('show')
     ->parameters(['autores' => 'autor']);
+    
+Route::resource('editoras', EditoraController::class)
+    ->except('show')
+    ->parameters(['editoras' => 'editora']);
