@@ -6,6 +6,7 @@ use App\Http\Controllers\EmprestimoController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AutorController;
 use App\Http\Controllers\EditoraController;
+use App\Http\Controllers\LivroController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('home');
 Route::post('/atualizar-atrasados', [DashboardController::class, 'atualizarAtrasados'])->name('atrasados.atualizar');
@@ -28,3 +29,6 @@ Route::resource('autores', AutorController::class)
 Route::resource('editoras', EditoraController::class)
     ->except('show')
     ->parameters(['editoras' => 'editora']);
+    
+Route::resource('livros', LivroController::class)
+    ->parameters(['livros' => 'livro']);
