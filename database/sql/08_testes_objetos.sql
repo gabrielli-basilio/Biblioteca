@@ -43,16 +43,16 @@ BEGIN
         RETURNING id_livro INTO v_livro2;
  
         -- ---------- Function 1 ----------
-        v_obtido := fn_gabrielli_exemplares_disponiveis(v_livro1)::TEXT;
+        v_obtido := fn_exemplares_disponiveis(v_livro1)::TEXT;
         v_res := v_res || jsonb_build_object('n', 1, 'teste', 'Function 1: livro novo com 2 exemplares',
             'esperado', '2', 'obtido', v_obtido, 'ok', v_obtido IS NOT DISTINCT FROM '2');
  
-        v_obtido := fn_gabrielli_exemplares_disponiveis(-1)::TEXT;
+        v_obtido := fn_exemplares_disponiveis(-1)::TEXT;
         v_res := v_res || jsonb_build_object('n', 2, 'teste', 'Function 1: livro inexistente',
             'esperado', NULL, 'obtido', v_obtido, 'ok', v_obtido IS NULL);
  
         -- ---------- Procedure 1: empréstimo válido ----------
-        CALL sp_gabrielli_registrar_emprestimo(v_cli_b, ARRAY[v_livro1, v_livro2], 14, v_emp_b);
+        CALL sp_registrar_emprestimo(v_cli_b, ARRAY[v_livro1, v_livro2], 14, v_emp_b);
  
         SELECT COUNT(*)::TEXT || ' itens / ' || e.status
           INTO v_obtido
@@ -63,18 +63,18 @@ BEGIN
         v_res := v_res || jsonb_build_object('n', 3, 'teste', 'Procedure 1: empréstimo com 2 livros',
             'esperado', '2 itens / em_andamento', 'obtido', v_obtido, 'ok', v_obtido = '2 itens / em_andamento');
  
-        v_obtido := fn_gabrielli_exemplares_disponiveis(v_livro1) || ' / ' || fn_gabrielli_exemplares_disponiveis(v_livro2);
+        v_obtido := fn_exemplares_disponiveis(v_livro1) || ' / ' || fn_exemplares_disponiveis(v_livro2);
         v_res := v_res || jsonb_build_object('n', 4, 'teste', 'Function 1: disponíveis depois do empréstimo',
             'esperado', '1 / 0', 'obtido', v_obtido, 'ok', v_obtido = '1 / 0');
  
-        v_obtido := fn_gabrielli_calcular_multa(v_emp_b)::TEXT;
+        v_obtido := fn_calcular_multa(v_emp_b)::TEXT;
         v_res := v_res || jsonb_build_object('n', 5, 'teste', 'Function 2: empréstimo no prazo não tem multa',
             'esperado', '0.00', 'obtido', v_obtido, 'ok', v_obtido = '0.00');
  
         -- ---------- Trigger 1: sem exemplar disponível ----------
         v_esper := format('Livro %s sem exemplares disponíveis', v_livro2);
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[v_livro2], 14, v_emp_a);
+            CALL sp_registrar_emprestimo(v_cli_a, ARRAY[v_livro2], 14, v_emp_a);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN
             v_obtido := SQLERRM;
@@ -89,7 +89,7 @@ BEGIN
         -- ---------- Procedure 1: validações ----------
         v_esper := 'Cliente -1 não encontrado';
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(-1, ARRAY[v_livro1], 14, v_emp_a);
+            CALL sp_registrar_emprestimo(-1, ARRAY[v_livro1], 14, v_emp_a);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 8, 'teste', 'Procedure 1: cliente inexistente',
@@ -97,14 +97,14 @@ BEGIN
  
         v_esper := 'O empréstimo deve ter de 1 a 5 livros';
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[]::INTEGER[], 14, v_emp_a);
+            CALL sp_registrar_emprestimo(v_cli_a, ARRAY[]::INTEGER[], 14, v_emp_a);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 9, 'teste', 'Procedure 1: nenhum livro',
             'esperado', v_esper, 'obtido', v_obtido, 'ok', v_obtido = v_esper);
  
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[1, 2, 3, 4, 5, 6], 14, v_emp_a);
+            CALL sp_registrar_emprestimo(v_cli_a, ARRAY[1, 2, 3, 4, 5, 6], 14, v_emp_a);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 10, 'teste', 'Procedure 1: 6 livros',
@@ -112,15 +112,15 @@ BEGIN
  
         v_esper := 'O prazo deve ser positivo';
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 0, v_emp_a);
+            CALL sp_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 0, v_emp_a);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 11, 'teste', 'Procedure 1: prazo zero',
             'esperado', v_esper, 'obtido', v_obtido, 'ok', v_obtido = v_esper);
  
         -- ---------- Procedure 2 + Trigger 2 ----------
-        CALL sp_gabrielli_registrar_devolucao(v_emp_b, v_livro1);
-        SELECT status || ' / disponíveis ' || fn_gabrielli_exemplares_disponiveis(v_livro1)
+        CALL sp_registrar_devolucao(v_emp_b, v_livro1);
+        SELECT status || ' / disponíveis ' || fn_exemplares_disponiveis(v_livro1)
           INTO v_obtido FROM emprestimos WHERE id_emprestimo = v_emp_b;
         v_res := v_res || jsonb_build_object('n', 12, 'teste', 'Procedure 2: devolução parcial mantém em andamento',
             'esperado', 'em_andamento / disponíveis 2', 'obtido', v_obtido,
@@ -128,51 +128,51 @@ BEGIN
  
         v_esper := format('Livro %s já foi devolvido no empréstimo %s', v_livro1, v_emp_b);
         BEGIN
-            CALL sp_gabrielli_registrar_devolucao(v_emp_b, v_livro1);
+            CALL sp_registrar_devolucao(v_emp_b, v_livro1);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 13, 'teste', 'Procedure 2: livro já devolvido',
             'esperado', v_esper, 'obtido', v_obtido, 'ok', v_obtido = v_esper);
  
-        CALL sp_gabrielli_registrar_devolucao(v_emp_b);
+        CALL sp_registrar_devolucao(v_emp_b);
         SELECT status INTO v_obtido FROM emprestimos WHERE id_emprestimo = v_emp_b;
         v_res := v_res || jsonb_build_object('n', 14, 'teste', 'Trigger 2: último livro devolvido finaliza o empréstimo',
             'esperado', 'devolvido', 'obtido', v_obtido, 'ok', v_obtido = 'devolvido');
  
         v_esper := format('Empréstimo %s não possui livros pendentes', v_emp_b);
         BEGIN
-            CALL sp_gabrielli_registrar_devolucao(v_emp_b);
+            CALL sp_registrar_devolucao(v_emp_b);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 15, 'teste', 'Procedure 2: nada pendente',
             'esperado', v_esper, 'obtido', v_obtido, 'ok', v_obtido = v_esper);
  
         -- ---------- Atraso: multa, Procedure 3 e bloqueio de novo empréstimo ----------
-        CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 14, v_emp_a);
+        CALL sp_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 14, v_emp_a);
         UPDATE emprestimos
            SET data_emprestimo = CURRENT_DATE - 20,
                data_prevista_devolucao = CURRENT_DATE - 6
          WHERE id_emprestimo = v_emp_a;
  
-        v_obtido := fn_gabrielli_calcular_multa(v_emp_a)::TEXT;
+        v_obtido := fn_calcular_multa(v_emp_a)::TEXT;
         v_res := v_res || jsonb_build_object('n', 16, 'teste', 'Function 2: 1 livro, 6 dias de atraso',
             'esperado', '6.00', 'obtido', v_obtido, 'ok', v_obtido = '6.00');
  
-        CALL sp_gabrielli_atualizar_atrasados();
+        CALL sp_atualizar_atrasados();
         SELECT status INTO v_obtido FROM emprestimos WHERE id_emprestimo = v_emp_a;
         v_res := v_res || jsonb_build_object('n', 17, 'teste', 'Procedure 3: marca o empréstimo vencido como atrasado',
             'esperado', 'atrasado', 'obtido', v_obtido, 'ok', v_obtido = 'atrasado');
  
         v_esper := format('Cliente %s possui empréstimos em atraso', v_cli_a);
         BEGIN
-            CALL sp_gabrielli_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 14, v_emp_b);
+            CALL sp_registrar_emprestimo(v_cli_a, ARRAY[v_livro1], 14, v_emp_b);
             v_obtido := 'não deu erro';
         EXCEPTION WHEN OTHERS THEN v_obtido := SQLERRM; END;
         v_res := v_res || jsonb_build_object('n', 18, 'teste', 'Procedure 1: cliente com atraso não empresta',
             'esperado', v_esper, 'obtido', v_obtido, 'ok', v_obtido = v_esper);
  
-        CALL sp_gabrielli_registrar_devolucao(v_emp_a, v_livro1);
-        SELECT status || ' / multa ' || fn_gabrielli_calcular_multa(v_emp_a)
+        CALL sp_registrar_devolucao(v_emp_a, v_livro1);
+        SELECT status || ' / multa ' || fn_calcular_multa(v_emp_a)
           INTO v_obtido FROM emprestimos WHERE id_emprestimo = v_emp_a;
         v_res := v_res || jsonb_build_object('n', 19, 'teste', 'Devolução do atrasado: finaliza e mantém a multa',
             'esperado', 'devolvido / multa 6.00', 'obtido', v_obtido, 'ok', v_obtido = 'devolvido / multa 6.00');

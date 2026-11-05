@@ -1,7 +1,7 @@
 SET search_path TO bribriotecadb;
 
 -- Procedure 1
-CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_emprestimo(
+CREATE OR REPLACE PROCEDURE sp_registrar_emprestimo(
     p_cliente_id    INTEGER,
     p_livros        INTEGER[],
     p_dias_prazo    INTEGER,
@@ -55,7 +55,7 @@ END;
 $$;
 
 -- Procedure 2
-CREATE OR REPLACE PROCEDURE sp_gabrielli_registrar_devolucao(
+CREATE OR REPLACE PROCEDURE sp_registrar_devolucao(
     p_emprestimo_id INTEGER,
     p_livro_id      INTEGER DEFAULT NULL
 )
@@ -105,7 +105,7 @@ END;
 $$;
 
 -- Procedure 3
-CREATE OR REPLACE PROCEDURE sp_gabrielli_atualizar_atrasados()
+CREATE OR REPLACE PROCEDURE sp_atualizar_atrasados()
 LANGUAGE plpgsql
 SET search_path = bribriotecadb, public
 AS $$
@@ -128,4 +128,4 @@ BEGIN
 END;
 $$;
  
-CALL sp_gabrielli_atualizar_atrasados();
+CALL sp_atualizar_atrasados();
