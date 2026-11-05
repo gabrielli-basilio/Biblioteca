@@ -24,7 +24,7 @@ Parte do banco de dados da biblioteca criado no 1º bimestre por Gabrielli Basil
 
    ```bash
    git clone https://github.com/gabrielli-basilio/Biblioteca.git
-   cd biblioteca
+   cd Biblioteca
    composer install
    cp .env.example .env
    php artisan key:generate
@@ -67,7 +67,7 @@ O backup fica em `database/backups/` e as evidências em `docs/evidencias/`.
 | Rota | Descrição |
 | --- | --- |
 | `GET /` | Painel com totais, livros mais emprestados e maiores atrasos |
-| `POST /atualizar-atrasados` | Executa `sp_atualizar_atrasados` |
+| `POST /atualizar-atrasados` | Executa `sp_atualizar_atrasos` |
 | `/livros` | CRUD de livros, com busca por título/ISBN e filtro por categoria |
 | `/clientes` | CRUD de clientes, com validação de CPF |
 | `/autores`, `/editoras`, `/categorias` | CRUD das tabelas de apoio |
@@ -75,3 +75,72 @@ O backup fica em `database/backups/` e as evidências em `docs/evidencias/`.
 | `GET /emprestimos/create` · `POST /emprestimos` | Novo empréstimo (procedure) |
 | `GET /emprestimos/{id}` | Detalhe com multa calculada pela function |
 | `PATCH /emprestimos/{id}/devolver` | Devolução de um livro ou de todos (procedure + trigger) |
+
+## API REST
+
+Todas as respostas são JSON. Envie os cabeçalhos Accept: application/json e Content-Type: application/json.
+
+| Método | Rota | Descrição | Sucesso |
+| --- | --- | --- | --- |
+| GET | /api/livros | Lista paginada (busca, categoria_id, por_pagina) | 200 |
+| POST | /api/livros | Cria livro | 201 |
+| GET | /api/livros/{id} | Detalhe + exemplares disponíveis | 200 |
+| PUT/PATCH | /api/livros/{id} | Atualiza (PATCH aceita campos parciais) | 200 |
+| DELETE | /api/livros/{id} | Exclui (409 se já foi emprestado) | 204 |
+| GET | /api/emprestimos | Lista paginada (status) | 200 |
+| POST | /api/emprestimos | Registra empréstimo via procedure | 201 |
+| GET | /api/emprestimos/{id} | Detalhe + multa | 200 |
+| PATCH | /api/emprestimos/{id}/devolver | Devolve (livro_id opcional) | 200 |
+
+Erros: 404 para id inexistente, 422 para dados inválidos ou regra recusada pelo banco.
+
+Exemplo — criar livro:
+
+    POST /api/livros
+    {
+      "titulo": "O Hobbit",
+      "isbn": "9788595084742",
+      "ano_publicacao": 2019,
+      "quantidade_exemplar": 3,
+      "categoria_id": 3,
+      "editora_id": 1,
+      "autor_id": 30
+    }
+
+Exemplo — registrar empréstimo:
+
+    POST /api/emprestimos
+    {
+      "cliente_id": 1001,
+      "livros": [1, 2],
+      "dias_prazo": 14
+    }
+
+Resposta 422 quando o cliente tem atraso:
+
+    { "message": "Cliente 12 possui empréstimos em atraso" }
+
+## Testes
+
+Os testes rodam num branch testes do Neon (cópia do banco com functions, procedures e triggers).
+Cada teste roda numa transação desfeita no final; nada fica gravado.
+
+1. No Neon, crie o branch testes a partir de production.
+2. Configure o ambiente:
+
+        cp .env.testing.example .env.testing
+        php artisan key:generate --env=testing
+
+3. No arquivo .env.testing, preencha DB_HOST (host do branch) e DB_PASSWORD.
+4. Rode:
+
+        php artisan test
+
+| Arquivo | O que testa |
+| --- | --- |
+| Web/LivroWebTest | Listagem e detalhe de livros (function de disponibilidade) |
+| Web/ClienteWebTest | Cadastro de cliente e recusa de CPF inválido |
+| Web/EmprestimoWebTest | Procedure de empréstimo, trigger de disponibilidade e de devolução |
+| Api/LivroApiConsultaTest | Estrutura JSON da listagem, detalhe e 404 |
+| Api/LivroApiEscritaTest | 201, 422, PATCH e 204 |
+| Api/EmprestimoApiTest | 201, bloqueio por atraso (422) e devolução |
